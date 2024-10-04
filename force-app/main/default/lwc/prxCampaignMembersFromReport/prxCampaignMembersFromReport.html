@@ -1,0 +1,50 @@
+<!-- 
+    Author : Daniel Dubec 03.10.2024 
+-->
+<template>
+    <lightning-card title="Členovia kampane" icon-name="standard:campaign_members">
+        <div class="slds-m-around_medium">
+            <lightning-tabset>
+                <lightning-tab label="Report">
+                    <template lwc:if={reportFolder}>
+                        <div class="slds-box slds-theme_shade slds-m-bottom_small">
+                            <lightning-icon icon-name="utility:info" alternative-text="Info" title="Info"
+                                class="slds-m-right_small"></lightning-icon>
+                            Reporty z adresára <b>{reportFolder}</b>
+                        </div>
+                        <div class="slds-grid slds-gutters">
+                            <div class="slds-col">
+                                <lightning-combobox class="inputReport" name="reports" variant=" label-hidden"
+                                    placeholder="Vyberte report" options={optReports} onchange={handleChangeReport}>
+                                </lightning-combobox>
+                            </div>
+                            <template lwc:if={reportId}>
+                                <div class="slds-col slds-grow-none">
+                                    <lightning-button-icon icon-name="utility:edit" alternative-text="Edit"
+                                        title="Editácia" onclick={handleNavigateToReportEdit}></lightning-button-icon>
+                                </div>
+
+                            </template>
+                        </div>
+                        <template lwc:if={reportId}>
+                            <lightning-input class="slds-m-top_medium" type="checkbox"
+                                label="Pridať iba primárne kontakty" onchange={handlePrimaryContact}></lightning-input>
+
+                            <div class="slds-align_absolute-center slds-m-top_small">
+                                <lightning-button label="Pridať" variant="brand" icon-name="utility:add"
+                                    onclick={handleAddSelectedReport}></lightning-button>
+                            </div>
+                        </template>
+                    </template>
+                    <template lwc:else>
+                        <div class="slds-box slds-theme_shade">
+                            <lightning-icon icon-name="utility:settings" alternative-text="Info" title="Info"
+                                class="slds-m-right_small"></lightning-icon>
+                            Vytvorte adresár s API name <b>{reportFolderDeveloperName}</b>
+                        </div>
+                    </template>
+                </lightning-tab>
+            </lightning-tabset>
+        </div>
+    </lightning-card>
+</template>
