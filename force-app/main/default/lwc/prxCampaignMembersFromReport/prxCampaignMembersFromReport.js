@@ -8,7 +8,7 @@ import { NavigationMixin } from 'lightning/navigation';
 
 export default class PrxCampaignMembersFromReport extends NavigationMixin(LightningElement) {
     @api recordId;
-
+    @api accountFields;
     optReports = [];
     reportId;
     reportFolder;
@@ -63,7 +63,16 @@ export default class PrxCampaignMembersFromReport extends NavigationMixin(Lightn
     }
 
     handleAddSelectedReport() {
-        addCampaignMembersFromReport({ campaignId: this.recordId, reportId: this.reportId, onlyPrimary: this.onlyPrimary })
+        console.log('Try to add members to report');
+        const options = new Map();
+        options.set('onlyPrimary', this.onlyPrimary);
+        options.set('accountFields', this.accountFields);
+        // Convert Map to a plain object
+        const objectifiedMap = Object.fromEntries(options);
+
+        console.log('objectifiedMap:', objectifiedMap);
+
+        addCampaignMembersFromReport({ campaignId: this.recordId, reportId: this.reportId, options: objectifiedMap })
             .then(data => {
                 if (data > 0) {
                     const event = new ShowToastEvent({

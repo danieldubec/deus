@@ -31,23 +31,61 @@ public with sharing class PrxCampaignMembersFromReportController {
 
     
     @AuraEnabled    
-    public static Integer addCampaignMembersFromReport(Id campaignId, Id reportId, boolean onlyPrimary) {
+    public static Integer addCampaignMembersFromReport(Id campaignId, Id reportId, Map<String,Object> options) {
+        System.debug(options);
+        // Options
+        Boolean onlyPrimary = false;
+        if (options.containsKey('onlyPrimary')) {
+            onlyPrimary = (Boolean) options.get('onlyPrimary');
+        }
+        System.debug('onlyPrimary : ' + onlyPrimary);
+
+        String accountFields = 'ACCOUNT.NAME';
+        if (options.containsKey('accountFields')) {
+            String name = (String) options.get('accountFields');
+            accountFields += ',' + name.trim().toUpperCase();
+        }
+        accountFields = accountFields.trim();
+        if (accountFields.endsWith(',')) {
+            accountFields = accountFields.left(accountFields.length()-1);
+        }
+
+        System.debug('accountFields : ' + accountFields);
+
+        // Account column names
+        List<String> columnNames = new List<String>();                
+        if (String.isNotBlank(accountFields)) {
+            columnNames = accountFields.split(',');            
+        }        
+
+        System.debug('Column Names');
+        System.debug(columnNames);
+
         // Define a variable to hold the report results
         List<List<String>> reportData = new List<List<String>>();
         
         // Create an instance of the Reports class
         Reports.ReportResults results = Reports.ReportManager.runReport(reportId, true);
-        Integer size = results.getFactMap().size();
-        System.debug('FactMap Size : ' + size);
+        Integer size = results.getFactMap().size();        
         
-        // Get detail columns
-        Reports.ReportMetadata rm = results.getReportMetadata();
-        rm.getDetailColumns();
-        Integer accountCellIndex = rm.getDetailColumns().indexOf('ACCOUNT.NAME');        
+        // We are looking for column with account in report        
+        Reports.ReportMetadata rm = results.getReportMetadata();        
+        System.debug('Report columns');
+        System.debug(rm.getDetailColumns());
+
+        Integer accountCellIndex = -1;
+        for (String column:columnNames) {            
+            accountCellIndex = rm.getDetailColumns().indexOf(column);
+            // Break loop if we found the account column
+            if (accountCellIndex > -1) {
+                break;
+            }
+        }
+
         System.debug('Account Cell Index : ' + accountCellIndex);
         
         if (accountCellIndex < 0)
-            throw new AuraHandledException('Report musí obsahovať stĺpec "Account Name"');
+            throw new AuraHandledException('Report musí obsahovať jeden zo stĺpcov ' +  accountFields);
         
         Integer successfulInsertCount = 0;
         // Fetch data from report    
